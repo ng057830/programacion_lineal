@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Programación Lineal · Optimización de Vivero & Prisma Truncado en ℝ³</title>
+  <meta name="description" content="Visualizador interactivo 3D y 2D de programación lineal, región factible, prisma truncado de beneficio y simulador de restricciones para el problema del vivero.">
+  
+  <!-- Google Fonts & KaTeX for LaTeX Math -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Plotly.js CDN -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <!-- KaTeX scripts -->
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-wrapper">
+        <div class="brand-icon">PL</div>
+        <div class="brand-titles">
+          <h1>Programación Lineal · Vivero de Sustratos <span class="badge-tag">Versión 2.0 Pro</span></h1>
+          <p>Modelo de optimización con visualización 3D en ℝ³, método gráfico 2D y simulador interactivo</p>
+        </div>
+      </div>
+      <div class="panel-actions">
+        <span class="badge-tag" style="background:#ecfdf5; color:#059669; border-color:#a7f3d0;">
+          ● Solución Óptima: (200, 180)
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- KPI Ribbon Summary -->
+  <section class="kpi-ribbon">
+    <div class="kpi-container">
+      <div class="kpi-card highlight">
+        <span class="kpi-label">Beneficio Máximo</span>
+        <span class="kpi-value">20.800 €</span>
+        <span class="kpi-desc">Obtenido en el vértice B</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Producción Sustrato A (x)</span>
+        <span class="kpi-value">200 m³</span>
+        <span class="kpi-desc">Consumo: 12.000 kg tierra · 6.000 h</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Producción Sustrato B (y)</span>
+        <span class="kpi-value">180 m³</span>
+        <span class="kpi-desc">Consumo: 9.000 kg tierra · 9.000 h</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Eficiencia de Recursos</span>
+        <span class="kpi-value">100%</span>
+        <span class="kpi-desc">Agotamiento pleno de tierra y horas</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation Tabs -->
+  <nav class="tabs-bar">
+    <button class="tab-btn active" data-tab="tab-3d">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+      Visualizador 3D (Prisma en ℝ³)
+    </button>
+    <button class="tab-btn" data-tab="tab-2d">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+      Método Gráfico 2D & Rectas de Nivel
+    </button>
+    <button class="tab-btn" data-tab="tab-sim">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+      Simulador Sandbox de Producción
+    </button>
+    <button class="tab-btn" data-tab="tab-theory">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      Resolución Analítica Paso a Paso
+    </button>
+  </nav>
+
+  <!-- Main Workspace -->
+  <main class="main-content">
+
+    <!-- TAB 1: 3D PRISM VISUALIZATION -->
+    <div id="tab-3d" class="tab-panel active">
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h2>Geometría Espacial del Beneficio: Prisma Truncado en ℝ³</h2>
+            <p style="font-size:0.88rem; color:var(--text-muted); margin-top:2px;">
+              A la izquierda se observa la región factible en el suelo \(z = 0\); a la derecha se eleva el prisma truncado por el plano \(z = 50x + 60y\).
+            </p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn btn-outline btn-sm" id="btn-cam-iso">🔭 Isométrica</button>
+            <button class="btn btn-outline btn-sm" id="btn-cam-top">📐 Planta (Superior)</button>
+            <button class="btn btn-outline btn-sm" id="btn-cam-front">🚪 Frontal</button>
+          </div>
+        </div>
+
+        <div class="plot-3d-wrapper">
+          <div id="plot-3d-container"></div>
+        </div>
+
+        <div class="viewer-hint">
+          <span>💡</span>
+          <div>
+            <strong>Interacción 3D:</strong> Haz clic y arrastra con el ratón para rotar el espacio. Usa la rueda para hacer zoom y mantén presionado botón secundario para desplazar. Coloca el cursor sobre los vértices para inspeccionar coordenadas exactas y beneficio evaluado.
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison of Vertices Table -->
+      <div class="grid-split-2">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2>Evaluación en los Vértices Extremos</h2>
+          </div>
+          <div class="data-table-wrapper">
+            <table class="vertex-table">
+              <thead>
+                <tr>
+                  <th>Vértice</th>
+                  <th>Sustrato A (x)</th>
+                  <th>Sustrato B (y)</th>
+                  <th>Beneficio B(x,y)</th>
+                  <th>Condición</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="vertex-badge badge-o">O</span> (0, 0)</td>
+                  <td>0 m³</td>
+                  <td>0 m³</td>
+                  <td>0 €</td>
+                  <td>Sin producción</td>
+                </tr>
+                <tr>
+                  <td><span class="vertex-badge badge-a">A</span> (0, 300)</td>
+                  <td>0 m³</td>
+                  <td>300 m³</td>
+                  <td>18.000 €</td>
+                  <td>Límite horas de trabajo</td>
+                </tr>
+                <tr class="optimal-row">
+                  <td><span class="vertex-badge badge-b">B</span> (200, 180)</td>
+                  <td>200 m³</td>
+                  <td>180 m³</td>
+                  <td><strong>20.800 €</strong></td>
+                  <td><span class="optimal-tag">★ MÁXIMO ÓPTIMO</span></td>
+                </tr>
+                <tr>
+                  <td><span class="vertex-badge badge-c">C</span> (300, 60)</td>
+                  <td>300 m³</td>
+                  <td>60 m³</td>
+                  <td>18.600 €</td>
+                  <td>Límite proporción técnica</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2>Interpretación Económica del Modelo</h2>
+          </div>
+          <p style="font-size:0.92rem; color:#475569; margin-bottom:12px;">
+            El vivero cuenta con recursos limitados: <strong>21.000 kg</strong> de tierra vegetal y <strong>15.000 horas</strong> de mano de obra. Además, existe una restricción de mercado que impide fabricar más de 5 veces sustrato A respecto al sustrato B (\(x \le 5y\)).
+          </p>
+          <ul style="font-size:0.9rem; color:#475569; padding-left:20px; display:flex; flex-direction:column; gap:8px;">
+            <li>El vértice \(B(200, 180)\) representa el punto de equilibrio donde se consumen simultáneamente el <strong>100% de la tierra vegetal</strong> (\(60 \cdot 200 + 50 \cdot 180 = 21.000\)) y el <strong>100% de las horas</strong> (\(30 \cdot 200 + 50 \cdot 180 = 15.000\)).</li>
+            <li>No hay capacidad ociosa en ninguno de los dos factores productivos clave.</li>
+            <li>La cúspide del prisma truncado en 3D corresponde exactamente al punto \(B'(200, 180, 20800)\), confirmando visualmente el Teorema Fundamental de la Programación Lineal.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: 2D GRAPHICAL METHOD & LEVEL CURVES -->
+    <div id="tab-2d" class="tab-panel">
+      <div class="grid-split-2">
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2>Plano Cartesiano de la Región Factible</h2>
+            <div class="panel-actions">
+              <span class="legend-item"><span class="legend-dot" style="background:#2563eb;"></span> L1: Tierra</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#7c3aed;"></span> L2: Horas</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#d97706;"></span> L3: x=5y</span>
+              <span class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span> Nivel B(x,y)</span>
+            </div>
+          </div>
+
+          <div class="canvas-container">
+            <canvas id="canvas2d" width="650" height="650"></canvas>
+          </div>
+          <p style="font-size:0.8rem; color:var(--text-muted); text-align:center; margin-top:8px;">
+            Haz clic en cualquier punto del gráfico para evaluar su factibilidad en el simulador.
+          </p>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2>Control de Rectas de Isobeneficio (Nivel)</h2>
+          </div>
+          <p style="font-size:0.92rem; color:#475569;">
+            La familia de rectas de beneficio viene dada por la ecuación \(50x + 60y = k\). A medida que incrementamos el valor de \(k\), la recta se desplaza paralelamente hacia el exterior en la dirección del gradiente \(\nabla B = (50, 60)\).
+          </p>
+
+          <div class="level-slider-panel">
+            <div class="slider-row">
+              <label style="font-weight:600; font-size:0.9rem;">Valor de Nivel \(k\):</label>
+              <input type="range" id="level-slider" min="0" max="25000" step="200" value="20800">
+              <span class="slider-val-badge" id="level-val-badge">20.800 €</span>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn btn-primary" id="btn-sweep-play">▶ Reproducir Barrido de Nivel</button>
+              <button class="btn btn-outline" onclick="document.getElementById('level-slider').value = 20800; document.getElementById('level-slider').dispatchEvent(new Event('input'));">Fijar Óptimo (20.800 €)</button>
+            </div>
+          </div>
+
+          <div style="margin-top:20px;">
+            <h3 style="font-size:1rem; font-weight:700; margin-bottom:8px;">Observación Pedagógica:</h3>
+            <p style="font-size:0.88rem; color:#475569; line-height:1.6;">
+              Observa cómo para \(k < 20.800\), la recta rosa corta el interior de la región factible (infinitas soluciones factibles). Al llegar a <strong>\(k = 20.800\)</strong>, la recta hace contacto tangencial en el único punto extremo \(B(200, 180)\). Si \(k > 20.800\), la recta queda totalmente fuera del polígono, demostrando que ningún otro punto de la región puede alcanzar mayor beneficio.
+            </p>
+          </div>
+
+          <div style="margin-top:24px;">
+            <h3 style="font-size:1rem; font-weight:700; margin-bottom:10px;">Ecuaciones de Frontera:</h3>
+            <div style="display:flex; flex-direction:column; gap:8px; font-size:0.88rem;">
+              <div style="padding:8px 12px; background:#eff6ff; border-left:4px solid #2563eb; border-radius:4px;">
+                <strong>Restricción Tierra (L1):</strong> \(6x + 5y \le 2100 \implies y \le \frac{2100 - 6x}{5}\)
+              </div>
+              <div style="padding:8px 12px; background:#f5f3ff; border-left:4px solid #7c3aed; border-radius:4px;">
+                <strong>Restricción Horas (L2):</strong> \(3x + 5y \le 1500 \implies y \le \frac{1500 - 3x}{5}\)
+              </div>
+              <div style="padding:8px 12px; background:#fffbeb; border-left:4px solid #d97706; border-radius:4px;">
+                <strong>Restricción Proporción (L3):</strong> \(x \le 5y \implies y \ge \frac{x}{5}\)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: PRODUCTION SANDBOX / SIMULATOR -->
+    <div id="tab-sim" class="tab-panel">
+      <div class="simulator-layout">
+        <!-- Controls Column -->
+        <div>
+          <div class="control-group">
+            <div class="control-title">
+              <span>Parámetros de Producción</span>
+              <span class="badge-tag">Entrada Dinámica</span>
+            </div>
+
+            <!-- Slider X -->
+            <div class="slider-item">
+              <label>
+                <span>Sustrato Tipo A (\(x\)):</span>
+                <input type="number" id="sim-num-x" class="slider-num-input" min="0" max="350" value="200">
+              </label>
+              <input type="range" id="sim-slider-x" min="0" max="350" step="5" value="200">
+            </div>
+
+            <!-- Slider Y -->
+            <div class="slider-item">
+              <label>
+                <span>Sustrato Tipo B (\(y\)):</span>
+                <input type="number" id="sim-num-y" class="slider-num-input" min="0" max="350" value="180">
+              </label>
+              <input type="range" id="sim-slider-y" min="0" max="350" step="5" value="180">
+            </div>
+
+            <div class="control-title" style="margin-top:16px;">
+              <span>Saltar a Vértice Notorio</span>
+            </div>
+            <div class="quick-buttons">
+              <button class="btn btn-outline btn-sm btn-jump-vertex" data-x="200" data-y="180" style="border-color:#10b981; color:#047857; font-weight:700;">★ Óptimo B(200, 180)</button>
+              <button class="btn btn-outline btn-sm btn-jump-vertex" data-x="0" data-y="300">Vértice A(0, 300)</button>
+              <button class="btn btn-outline btn-sm btn-jump-vertex" data-x="300" data-y="60">Vértice C(300, 60)</button>
+              <button class="btn btn-outline btn-sm btn-jump-vertex" data-x="0" data-y="0">Origen O(0, 0)</button>
+              <button class="btn btn-outline btn-sm btn-jump-vertex" data-x="100" data-y="100">Punto Interior (100, 100)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feedback & Meters Column -->
+        <div>
+          <!-- Profit Box -->
+          <div class="profit-display-box">
+            <div class="profit-top">
+              <span class="profit-title">Beneficio Estimado</span>
+              <span class="badge-tag" style="background:rgba(255,255,255,0.15); color:white; border:none;">Función B(x, y) = 50x + 60y</span>
+            </div>
+            <div class="profit-amount" id="profit-amount-val">20.800 €</div>
+            <div class="profit-formula" id="profit-formula-val">50 · (200) + 60 · (180) = 20.800 € (100.0% del óptimo)</div>
+          </div>
+
+          <!-- Status Indicator -->
+          <div class="status-box feasible" id="sim-status-box">
+            <div class="status-icon" id="sim-status-icon">✅</div>
+            <div class="status-details">
+              <h3 id="sim-status-title">Punto Factible</h3>
+              <p id="sim-status-desc">Cumple todas las restricciones del modelo productivo.</p>
+            </div>
+          </div>
+
+          <!-- Consumption Meters -->
+          <div class="meter-card">
+            <div class="meter-header">
+              <span class="meter-title">🌱 Consumo de Tierra Vegetal (\(60x + 50y \le 21.000\))</span>
+              <span class="meter-stat" id="meter-tierra-val">21.000 / 21.000 kg (100%)</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill safe" id="bar-tierra-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <div class="meter-card">
+            <div class="meter-header">
+              <span class="meter-title">⏱️ Horas de Trabajo (\(30x + 50y \le 15.000\))</span>
+              <span class="meter-stat" id="meter-horas-val">15.000 / 15.000 h (100%)</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill safe" id="bar-horas-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <div class="meter-card">
+            <div class="meter-header">
+              <span class="meter-title">⚖️ Proporción Técnica (\(x \le 5y \iff x - 5y \le 0\))</span>
+              <span class="meter-stat" id="meter-prop-val">200 m³ vs máx 900 m³ (Cumple)</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill safe" id="bar-prop-fill" style="width: 22%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: STEP-BY-STEP THEORY & CALCULATIONS -->
+    <div id="tab-theory" class="tab-panel">
+      <div class="panel-card">
+        <div class="panel-header">
+          <h2>Memoria de Cálculo Analítico & Formulación Matemática</h2>
+          <span class="badge-tag">Procedimiento Riguroso</span>
+        </div>
+
+        <div class="step-item">
+          <h3>1. Declaración de Variables de Decisión</h3>
+          <p>Definimos el volumen mensual producido de cada variedad de sustrato en metros cúbicos (\(m^3\)):</p>
+          <div class="math-card">
+            \[x: \text{Metros cúbicos de Sustrato Tipo A} \quad (x \ge 0)\]
+            \[y: \text{Metros cúbicos de Sustrato Tipo B} \quad (y \ge 0)\]
+          </div>
+        </div>
+
+        <div class="step-item">
+          <h3>2. Función Objetivo (Maximizadora)</h3>
+          <p>El beneficio comercial unitario aportado por metro cúbico es de 50 € para el Tipo A y 60 € para el Tipo B:</p>
+          <div class="math-card">
+            \[\text{Maximizar } B(x, y) = 50x + 60y\]
+          </div>
+        </div>
+
+        <div class="step-item">
+          <h3>3. Planteamiento del Sistema de Restricciones</h3>
+          <p>A partir de la disponibilidad limitada de materia prima y jornada de operarios, más el condicionante técnico:</p>
+          <div class="math-card">
+            \[
+            \begin{cases}
+            60x + 50y \le 21\,000 & \implies \mathbf{6x + 5y \le 2100} \quad \text{(Disponibilidad de tierra vegetal)} \\
+            30x + 50y \le 15\,000 & \implies \mathbf{3x + 5y \le 1500} \quad \text{(Disponibilidad de horas de trabajo)} \\
+            x \le 5y & \implies \mathbf{x - 5y \le 0} \quad \text{(Condición de mezcla/demanda)} \\
+            x \ge 0, \quad y \ge 0 & \text{(Condición de no negatividad física)}
+            \end{cases}
+            \]
+          </div>
+        </div>
+
+        <div class="step-item">
+          <h3>4. Puntos de Corte de las Rectas Frontera con los Ejes</h3>
+          <p>Para representar con exactitud las rectas frontera en el plano cartesiano:</p>
+          <div class="data-table-wrapper" style="margin:12px 0;">
+            <table class="vertex-table">
+              <thead>
+                <tr>
+                  <th>Ecuación Frontera</th>
+                  <th>Corte con Eje Y (\(x = 0\))</th>
+                  <th>Coordenada (0, y)</th>
+                  <th>Corte con Eje X (\(y = 0\))</th>
+                  <th>Coordenada (x, 0)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>6x + 5y = 2100</strong></td>
+                  <td>\(5y = 2100 \implies y = 420\)</td>
+                  <td>(0, 420)</td>
+                  <td>\(6x = 2100 \implies x = 350\)</td>
+                  <td>(350, 0)</td>
+                </tr>
+                <tr>
+                  <td><strong>3x + 5y = 1500</strong></td>
+                  <td>\(5y = 1500 \implies y = 300\)</td>
+                  <td>(0, 300)</td>
+                  <td>\(3x = 1500 \implies x = 500\)</td>
+                  <td>(500, 0)</td>
+                </tr>
+                <tr>
+                  <td><strong>x - 5y = 0</strong></td>
+                  <td>\(y = 0\)</td>
+                  <td>(0, 0)</td>
+                  <td>Pasa por \((500, 100)\)</td>
+                  <td>Pasa por el origen</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <h3>5. Determinación Analítica de los Vértices del Polígono Convexo</h3>
+          <p>Los vértices se hallan resolviendo los sistemas lineales dos a dos de las rectas activas:</p>
+          <div class="math-card">
+            <p><strong>Vértice O:</strong> Intersección de \(x = 0\) y \(y = 0\) \(\implies \mathbf{O(0, 0)}\)</p>
+            <p style="margin-top:6px;"><strong>Vértice A:</strong> Intersección de \(x = 0\) y \(3x + 5y = 1500 \implies 5y = 1500 \implies y = 300 \implies \mathbf{A(0, 300)}\)</p>
+            <p style="margin-top:6px;"><strong>Vértice B:</strong> Intersección de \(6x + 5y = 2100\) y \(3x + 5y = 1500\):</p>
+            <p style="padding-left:14px;">Restando ambas ecuaciones: \((6x + 5y) - (3x + 5y) = 2100 - 1500 \implies 3x = 600 \implies \mathbf{x = 200}\)</p>
+            <p style="padding-left:14px;">Sustituyendo: \(3(200) + 5y = 1500 \implies 5y = 900 \implies \mathbf{y = 180} \implies \mathbf{B(200, 180)}\)</p>
+            <p style="margin-top:6px;"><strong>Vértice C:</strong> Intersección de \(6x + 5y = 2100\) y \(x = 5y\):</p>
+            <p style="padding-left:14px;">Sustituyendo \(x = 5y\): \(6(5y) + 5y = 2100 \implies 35y = 2100 \implies \mathbf{y = 60}\)</p>
+            <p style="padding-left:14px;">Luego: \(x = 5(60) \implies \mathbf{x = 300} \implies \mathbf{C(300, 60)}\)</p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <h3>6. Evaluación del Teorema Fundamental y Conclusión</h3>
+          <p>Evaluamos la función beneficio en cada vértice extremo del conjunto factible acotado:</p>
+          <div class="math-card">
+            \[B(O) = 50(0) + 60(0) = 0 \text{ €}\]
+            \[B(A) = 50(0) + 60(300) = 18\,000 \text{ €}\]
+            \[\mathbf{B(B) = 50(200) + 60(180) = 10\,000 + 10\,800 = 20\,800 \text{ €} \quad (\text{MÁXIMO ABSOLUTO})}\]
+            \[B(C) = 50(300) + 60(60) = 15\,000 + 3\,600 = 18\,600 \text{ €}\]
+          </div>
+          <p style="font-weight:600; color:#065f46; background:#ecfdf5; padding:12px; border-radius:8px; border:1px solid #a7f3d0; margin-top:10px;">
+            ✅ Decisión Óptima: Para maximizar el beneficio económico a 20.800 €, la empresa debe producir exactamente <strong>200 m³ de Sustrato Tipo A</strong> y <strong>180 m³ de Sustrato Tipo B</strong>.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div>
+        <strong>Programación Lineal · Vivero de Sustratos</strong> · Visualizador Interactivo de Alto Rendimiento
+      </div>
+      <div>
+        Alojado en GitHub Pages · Antigravity AI
+      </div>
+    </div>
+  </footer>
+
+  <!-- App Main Script -->
+  <script src="js/app.js"></script>
+</body>
+</html>
